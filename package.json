@@ -21,6 +21,7 @@
     "express": "^4.21.1",
     "express-rate-limit": "^7.4.1",
     "helmet": "^8.0.0",
+    "jest-mock-extended": "^4.0.0-beta1",
     "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
@@ -42,6 +43,7 @@
     "nodemon": "^3.1.7",
     "prettier": "^3.3.3",
     "prisma": "^5.22.0",
+    "prisma-mock": "^0.10.3",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
