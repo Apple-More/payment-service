@@ -12,7 +12,7 @@ app.use(express.json());
 
 // API routes
 app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'Payment service is online' });
+  res.status(200).json({ status: 'Payment service Online' });
 });
 
 app.use('/v1', router);
