@@ -19,8 +19,7 @@ export const createPayment = async (
 
     return res.status(201).json({
       status: 'success',
-      message: 'Payment created successfully',
-      data: payment,
+      message: 'Payment created successfully'
     });
   } catch (error) {
     return res.status(400).json({
