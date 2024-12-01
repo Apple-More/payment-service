@@ -1,9 +1,7 @@
 import { Router } from 'express';
-import { createPayment, getPaymentsByCustomer, getPaymentById, getAllPayments, getPaymentStatistics, test  } from '../controllers/payment-controller';
+import { createPayment, getPaymentsByCustomer, getPaymentById, getAllPayments, getPaymentStatistics  } from '../controllers/payment-controller';
 
 const router = Router();
-
-router.get('/test', test);
 
 // customer routes
 router.post('/customer/payments', createPayment);
