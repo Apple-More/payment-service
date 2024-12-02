@@ -1,5 +1,13 @@
-node_modules
-dist
-.env
 .git
 .github
+ctrf
+dist
+node_modules
+tests
+.dockerignore
+.env
+.gitignore
+Dockerfile
+jest.config.tests
+nodemon.json
+README.md
