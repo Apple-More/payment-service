@@ -22,7 +22,8 @@
     "express-rate-limit": "^7.4.1",
     "helmet": "^8.0.0",
     "jest-mock-extended": "^4.0.0-beta1",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "stripe": "^17.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",

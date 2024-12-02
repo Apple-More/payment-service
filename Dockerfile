@@ -32,10 +32,12 @@ COPY --from=builder /app/dist ./dist
 # Accept build arguments for PORT and DATABASE_URL
 ARG PORT
 ARG DATABASE_URL
+ARG STRIPE_SECRET_KEY
 
 # Set environment variables
 ENV PORT=${PORT}
 ENV DATABASE_URL=${DATABASE_URL}
+ENV STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
 
 # Expose the application port
 EXPOSE ${PORT}
