@@ -5,8 +5,17 @@ on:
     branches:
       - develop
 
+permissions:
+  pull-requests: write
+  contents: read
+
+env:
+  PORT: ${{ secrets.PORT }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+  
 jobs:
-  test:
+  jest-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,3 +32,9 @@ jobs:
 
       - name: Run Jest tests
         run: npm test
+        
+      - name: Publish Test Summary Results
+        run: npx github-actions-ctrf pull-request ctrf/ctrf-report.json
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
