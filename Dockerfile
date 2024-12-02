@@ -32,6 +32,9 @@ COPY --from=builder /app/dist ./dist
 # Install only production dependencies
 RUN npm install --omit=dev
 
+# Generate Prisma client
+RUN npx prisma generate
+
 # Accept build arguments for PORT and DATABASE_URL
 ARG PORT
 ARG DATABASE_URL
