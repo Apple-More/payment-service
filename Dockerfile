@@ -26,8 +26,11 @@ FROM node:20-alpine AS release
 WORKDIR /app
 
 # Copy the required files from the builder stage
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
+
+# Install only production dependencies
+RUN npm install --omit=dev
 
 # Accept build arguments for PORT and DATABASE_URL
 ARG PORT
