@@ -58,7 +58,7 @@ describe('Payment Controller Tests', () => {
         customer_Id: '123',
       });
 
-      await createPayment(req as Request, res as Response, jest.fn());
+      await createPayment(req as Request, res as Response);
 
       expect(prismaClient.payment.create).toHaveBeenCalledWith({
         data: {
@@ -86,7 +86,7 @@ describe('Payment Controller Tests', () => {
         { payment_type: 'Credit Card', amount: 100, status: 'Success', customer_Id: '123' },
       ]);
 
-      await getPaymentsByCustomer(req as Request, res as Response, jest.fn());
+      await getPaymentsByCustomer(req as Request, res as Response);
 
       expect(prismaClient.payment.findMany).toHaveBeenCalledWith({
         where: { customer_Id: '123' },
@@ -115,7 +115,7 @@ describe('Payment Controller Tests', () => {
         customer_Id: '123',
       });
 
-      await getPaymentById(req as Request, res as Response, jest.fn());
+      await getPaymentById(req as Request, res as Response);
 
       expect(prismaClient.payment.findUnique).toHaveBeenCalledWith({
         where: { payment_Id: '1' },
@@ -144,7 +144,7 @@ describe('Payment Controller Tests', () => {
         { payment_type: 'Credit Card', amount: 100, status: 'Success', customer_Id: '123' },
       ]);
 
-      await getAllPayments(req as Request, res as Response, jest.fn());
+      await getAllPayments(req as Request, res as Response);
 
       expect(prismaClient.payment.findMany).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);
@@ -172,7 +172,7 @@ describe('Payment Controller Tests', () => {
       .mockResolvedValueOnce({ _sum: { amount: 100 } }); 
 
 
-      await getPaymentStatistics(req as Request, res as Response, jest.fn());
+      await getPaymentStatistics(req as Request, res as Response);
 
       expect(prismaClient.payment.count).toHaveBeenCalled();
       expect(prismaClient.payment.aggregate).toHaveBeenCalledTimes(4);

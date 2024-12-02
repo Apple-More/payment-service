@@ -1,15 +1,44 @@
 import prisma from '../config/prisma';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
+import { STRIPE_SECRET_KEY } from '../config';
+const stripe = require("stripe")(STRIPE_SECRET_KEY);
+
+export const createPaymentIntent = async(
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { amount } = req.body;
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount,
+      currency: 'usd',
+    });
+
+    return res.status(201).json({
+      status: 'success',
+      message: 'Payment intent created successfully',
+      data: {
+        client_secret: paymentIntent.client_secret,
+      },
+    });
+  } catch (error) {
+    console.log(error)
+    return res.status(400).json({
+      status: 'error',
+      message: 'Error creating payment intent',
+    });
+  }
+}
 
 export const createPayment = async (
   req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+  res: Response
+): Promise<any> => {
   try {
     const { payment_type, amount, status, customer_Id } = req.body;
 
-    await prisma.payment.create({
+    const payment = await prisma.payment.create({
       data: {
         payment_type,
         amount,
@@ -18,20 +47,22 @@ export const createPayment = async (
       },
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       status: 'success',
-      message: 'Payment created successfully',
+      message: 'Payment created successfully'
     });
   } catch (error) {
-    next(error);
+    return res.status(400).json({
+      status: 'error',
+      message: 'Error creating payment',
+    });
   }
 };
 
 export const getPaymentsByCustomer = async (
   req: Request,
   res: Response,
-  next: NextFunction,
-) => {
+): Promise<any> => {
   try {
     const customer_Id = req.params.customer_Id;
 
@@ -41,22 +72,24 @@ export const getPaymentsByCustomer = async (
       },
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       message: 'Customer payments retrieved successfully',
       data: payments,
     });
 
   } catch (error) {
-    next(error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error retrieving customer payments'
+    });
   }
 }
 
 export const getPaymentById = async (
   req: Request,
   res: Response,
-  next: NextFunction,
-) => {
+): Promise<any> => {
   try {
     const payment_Id = req.params.payment_Id;
 
@@ -66,42 +99,51 @@ export const getPaymentById = async (
       },
     });
 
-    res.status(200).json({
+    if (!payment) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Payment not found',
+      });
+    }
+
+    return res.status(200).json({
       status: 'success',
       message: 'Payment retrieved successfully',
       data: payment,
     });
-
   } catch (error) {
-    next(error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error retrieving payment'
+    });
   }
 }
 
 export const getAllPayments = async (
   req: Request,
   res: Response,
-  next: NextFunction,
-) => {
+): Promise<any> => {
   try {
     const payments = await prisma.payment.findMany();
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       message: 'Payments retrieved successfully',
       data: payments,
     });
 
   } catch (error) {
-    next(error);
+    return res.status(500).json({
+      status: 'error',
+      matchMedia: 'Error retrieving payments'
+    });
   }
 }
 
-// Get payment statistics for the past year, past six months, and past month
 export const getPaymentStatistics = async (
   req: Request,
   res: Response,
-  next: NextFunction,
-) => {
+): Promise<any> => {
   try {
     const totalPayments = await prisma.payment.count();
 
@@ -153,7 +195,7 @@ export const getPaymentStatistics = async (
       },
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       message: 'Payment statistics retrieved successfully',
       data: {
@@ -165,21 +207,9 @@ export const getPaymentStatistics = async (
       },
     });
   } catch (error) {
-    next(error);
-  }
-}
-
-export const test = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    res.status(200).json({
-      status: 'success',
-      message: 'Payment TEST',
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error retrieving payment statistics'
     });
-  } catch (error) {
-    next(error);
   }
 }
