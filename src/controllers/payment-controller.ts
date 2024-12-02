@@ -1,5 +1,35 @@
 import prisma from '../config/prisma';
 import { Request, Response } from 'express';
+import { STRIPE_SECRET_KEY } from '../config';
+const stripe = require("stripe")(STRIPE_SECRET_KEY);
+
+export const createPaymentIntent = async(
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { amount } = req.body;
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount,
+      currency: 'usd',
+    });
+
+    return res.status(201).json({
+      status: 'success',
+      message: 'Payment intent created successfully',
+      data: {
+        client_secret: paymentIntent.client_secret,
+      },
+    });
+  } catch (error) {
+    console.log(error)
+    return res.status(400).json({
+      status: 'error',
+      message: 'Error creating payment intent',
+    });
+  }
+}
 
 export const createPayment = async (
   req: Request,
