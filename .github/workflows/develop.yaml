@@ -1,4 +1,4 @@
-name: Automated Unit Test
+name: Automate Testing
 
 on:
   pull_request:
@@ -10,25 +10,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20' # Change this to match your Node.js version
-          cache: 'npm'
+          node-version: '20'
 
-      # Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # Run Jest tests
-      - name: Run tests
+      - name: Run Jest tests
         run: npm test
-
-      # Publish test results 
-      - name: Publish Test Summary Results
-      run: npx github-actions-ctrf ctrf/ctrf-report.json
