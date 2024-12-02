@@ -5,8 +5,13 @@ on:
     branches:
       - develop
 
+env:
+  PORT: ${{ secrets.PORT }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+  
 jobs:
-  test:
+  jest-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,3 +28,6 @@ jobs:
 
       - name: Run Jest tests
         run: npm test
+        
+      - name: Publish Test Summary Results
+        run: npx github-actions-ctrf ctrf/ctrf-report.json
