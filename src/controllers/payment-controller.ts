@@ -10,15 +10,25 @@ export const createPayment = async (
   try {
     const { payment_type, amount, status, customer_Id } = req.body;
 
-    // const payment = await prisma.payment.create({
-    //   data: {
-    //     payment_type,
-    //     amount,
-    //     status,
-    //     customer_Id,
+    if (!payment_type || typeof payment_type !== 'string' || 
+        !amount || typeof amount !== 'number' || 
+        !status || typeof status !== 'string' || 
+        !customer_Id || typeof customer_Id !== 'string') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'All fields are required and must be of correct type',
+      });
+    }
 
-    //   },
-    // });
+    const payment = await prisma.payment.create({
+      data: {
+        payment_type,
+        amount,
+        status,
+        customer_Id,
+        payment_intent_id: '',
+      },
+    });
 
     return res.status(201).json({
       status: 'success',
@@ -38,6 +48,13 @@ export const getPaymentsByCustomer = async (
 ): Promise<any> => {
   try {
     const customer_Id = req.params.customer_Id;
+
+    if (!customer_Id || typeof customer_Id !== 'string') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Customer ID is required and must be a string',
+      });
+    }
 
     const payments = await prisma.payment.findMany({
       where: {
@@ -65,6 +82,13 @@ export const getPaymentById = async (
 ): Promise<any> => {
   try {
     const payment_Id = req.params.payment_Id;
+
+    if (!payment_Id || typeof payment_Id !== 'string') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Payment ID is required and must be a string',
+      });
+    }
 
     const payment = await prisma.payment.findUnique({
       where: {
@@ -193,6 +217,13 @@ export const createPaymentIntent = async (
 ): Promise<any> => {
   try {
     const { amount } = req.body;
+
+    if (!amount || typeof amount !== 'number') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Amount is required and must be a number',
+      });
+    }
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount,
