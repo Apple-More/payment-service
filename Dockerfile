@@ -28,6 +28,7 @@ WORKDIR /app
 # Copy the required files from the builder stage
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
 
 # Install only production dependencies
 RUN npm install --omit=dev
@@ -39,11 +40,13 @@ RUN npx prisma generate
 ARG PORT
 ARG DATABASE_URL
 ARG STRIPE_SECRET_KEY
+ARG STRIPE_WEBHOOK_SECRET
 
 # Set environment variables
 ENV PORT=${PORT}
 ENV DATABASE_URL=${DATABASE_URL}
 ENV STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+ENV STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
 
 # Expose the application port
 EXPOSE ${PORT}
