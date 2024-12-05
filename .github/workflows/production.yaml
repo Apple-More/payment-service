@@ -36,6 +36,7 @@ jobs:
             --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
             --build-arg STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
             --build-arg STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }} \
+            --build-arg API_GATEWAY_URL=${{ secrets.API_GATEWAY_URL }} \
             -t ${{ secrets.ACR_LOGIN_SERVER }}/payment-service:latest .
 
       # Push the Docker image to Azure Container Registry

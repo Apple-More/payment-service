@@ -56,6 +56,7 @@ describe('Payment Controller Tests', () => {
         amount: 100,
         status: 'Success',
         customer_Id: '123',
+        payment_intent_id:''
       });
 
       await createPayment(req as Request, res as Response);
@@ -66,6 +67,7 @@ describe('Payment Controller Tests', () => {
           amount: 100,
           status: 'Success',
           customer_Id: '123',
+          payment_intent_id: ''
         },
       });
       expect(res.status).toHaveBeenCalledWith(201); 

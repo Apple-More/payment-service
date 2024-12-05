@@ -6,14 +6,14 @@ const router = Router();
 // customer routes
 router.post('/customer/payment-intent', createPaymentIntent);
 router.post('/customer/payments', createPayment);
-router.get('/customer/payments/:payment_Id', getPaymentById);
-router.get('/customer/:customer_Id/payments/', getPaymentsByCustomer);
+router.get('/customer/:customer_Id/payments', getPaymentsByCustomer);
 
 // admin routes
 router.get('/admin/payments', getAllPayments);
-router.get('/admin/payments/statistics', getPaymentStatistics);
+router.get('/admin/payments/:payment_Id', getPaymentById);
+router.get('/admin/statistics/payments', getPaymentStatistics);
 
 // stripe webhook
-router.post('/stripe/webhook', confirmPayment);
+router.post('/public/stripe-webhook', confirmPayment);
 
 export default router;
