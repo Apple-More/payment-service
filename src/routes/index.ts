@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createPayment, getPaymentsByCustomer, getPaymentById, getAllPayments, getPaymentStatistics, createPaymentIntent } from '../controllers/payment-controller';
+import { createPayment, getPaymentsByCustomer, getPaymentById, getAllPayments, getPaymentStatistics, createPaymentIntent, confirmPayment } from '../controllers/payment-controller';
 
 const router = Router();
 
@@ -12,5 +12,8 @@ router.get('/customer/:customer_Id/payments/', getPaymentsByCustomer);
 // admin routes
 router.get('/admin/payments', getAllPayments);
 router.get('/admin/payments/statistics', getPaymentStatistics);
+
+// stripe webhook
+router.post('/stripe/webhook', confirmPayment);
 
 export default router;
