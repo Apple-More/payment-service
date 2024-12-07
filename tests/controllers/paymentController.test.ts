@@ -2,6 +2,7 @@ import { createPayment, getPaymentsByCustomer, getPaymentById, getAllPayments, g
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 
+
 // Mock PrismaClient
 jest.mock('@prisma/client', () => {
   const mockPayment = {
@@ -44,28 +45,36 @@ describe('Payment Controller Tests', () => {
     jest.clearAllMocks();
   });
 
-
   // Test: createPayment
   describe('createPayment', () => {
     it('should create a new payment successfully', async () => {
-      const req = mockRequest({ payment_type: 'Credit Card', amount: 100, status: 'Success', customer_Id: '123' });
+      const req = mockRequest({ 
+        payment_type: 'Credit Card', 
+        amount: 100, 
+        status: 'Success', 
+        customer_Id: '123' 
+      });
       const res = mockResponse();
-
+  
+      // Updated mock response to include payment_intent_id
       prismaClient.payment.create.mockResolvedValue({
         payment_type: 'Credit Card',
         amount: 100,
         status: 'Success',
         customer_Id: '123',
+        payment_intent_id: '',  // Assuming an empty string for this field
       });
-
+  
       await createPayment(req as Request, res as Response);
-
+  
+      // Updated expectation to match the received data (including payment_intent_id)
       expect(prismaClient.payment.create).toHaveBeenCalledWith({
         data: {
           payment_type: 'Credit Card',
           amount: 100,
           status: 'Success',
           customer_Id: '123',
+          payment_intent_id: '',  // Match this field as well
         },
       });
       expect(res.status).toHaveBeenCalledWith(201); 
@@ -91,7 +100,7 @@ describe('Payment Controller Tests', () => {
       expect(prismaClient.payment.findMany).toHaveBeenCalledWith({
         where: { customer_Id: '123' },
       });
-      expect(res.status).toHaveBeenCalledWith(200); 
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         status: 'success',
         message: 'Customer payments retrieved successfully',
@@ -120,7 +129,7 @@ describe('Payment Controller Tests', () => {
       expect(prismaClient.payment.findUnique).toHaveBeenCalledWith({
         where: { payment_Id: '1' },
       });
-      expect(res.status).toHaveBeenCalledWith(200); 
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         status: 'success',
         message: 'Payment retrieved successfully',
@@ -164,28 +173,28 @@ describe('Payment Controller Tests', () => {
       const req = mockRequest();
       const res = mockResponse();
 
+      // Mock count and aggregate responses
       prismaClient.payment.count.mockResolvedValue(5);
       prismaClient.payment.aggregate
-      .mockResolvedValueOnce({ _sum: { amount: 500 } }) 
-      .mockResolvedValueOnce({ _sum: { amount: 300 } }) 
-      .mockResolvedValueOnce({ _sum: { amount: 200 } }) 
-      .mockResolvedValueOnce({ _sum: { amount: 100 } }); 
-
+        .mockResolvedValueOnce({ _sum: { amount: 500 } })  // Total amount
+        .mockResolvedValueOnce({ _sum: { amount: 300 } })  // Past year
+        .mockResolvedValueOnce({ _sum: { amount: 200 } })  // Past six months
+        .mockResolvedValueOnce({ _sum: { amount: 100 } });  // Past month
 
       await getPaymentStatistics(req as Request, res as Response);
 
       expect(prismaClient.payment.count).toHaveBeenCalled();
       expect(prismaClient.payment.aggregate).toHaveBeenCalledTimes(4);
-      expect(res.status).toHaveBeenCalledWith(200); 
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         status: 'success',
         message: 'Payment statistics retrieved successfully',
         data: {
-        totalPayments: 5,
-        totalAmount: 500,
-        totalAmountPastYear: 300,
-        totalAmountPastSixMonths: 200,
-        totalAmountPastMonth: 100,
+          totalPayments: 5,
+          totalAmount: 500,
+          totalAmountPastYear: 300,
+          totalAmountPastSixMonths: 200,
+          totalAmountPastMonth: 100,
         },
       });
     });
