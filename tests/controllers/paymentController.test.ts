@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 
 
-
 // Mock PrismaClient
 jest.mock('@prisma/client', () => {
   const mockPayment = {
@@ -63,12 +62,10 @@ describe('Payment Controller Tests', () => {
         amount: 100,
         status: 'Success',
         customer_Id: '123',
+        payment_intent_id: '',  // Assuming an empty string for this field
       });
   
-  
       await createPayment(req as Request, res as Response);
-  
-      // Updated expectation to match the received data (including payment_intent_id)
   
       // Updated expectation to match the received data (including payment_intent_id)
       expect(prismaClient.payment.create).toHaveBeenCalledWith({
@@ -104,7 +101,6 @@ describe('Payment Controller Tests', () => {
         where: { customer_Id: '123' },
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         status: 'success',
         message: 'Customer payments retrieved successfully',
@@ -133,7 +129,6 @@ describe('Payment Controller Tests', () => {
       expect(prismaClient.payment.findUnique).toHaveBeenCalledWith({
         where: { payment_Id: '1' },
       });
-      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         status: 'success',
@@ -179,7 +174,6 @@ describe('Payment Controller Tests', () => {
       const res = mockResponse();
 
       // Mock count and aggregate responses
-      // Mock count and aggregate responses
       prismaClient.payment.count.mockResolvedValue(5);
       prismaClient.payment.aggregate
         .mockResolvedValueOnce({ _sum: { amount: 500 } })  // Total amount
@@ -191,7 +185,6 @@ describe('Payment Controller Tests', () => {
 
       expect(prismaClient.payment.count).toHaveBeenCalled();
       expect(prismaClient.payment.aggregate).toHaveBeenCalledTimes(4);
-      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         status: 'success',
