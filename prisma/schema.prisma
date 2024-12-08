@@ -19,6 +19,7 @@ model payment {
   amount        Float
   status        String
   customer_Id   String
+  payment_intent_id String
   createdAt     DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

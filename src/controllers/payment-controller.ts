@@ -1,39 +1,60 @@
 import prisma from '../config/prisma';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
+import { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET } from '../config';
+const stripe = require("stripe")(STRIPE_SECRET_KEY);
 
 export const createPayment = async (
   req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+  res: Response
+): Promise<any> => {
   try {
     const { payment_type, amount, status, customer_Id } = req.body;
 
-    await prisma.payment.create({
+    if (!payment_type || typeof payment_type !== 'string' || 
+        !amount || typeof amount !== 'number' || 
+        !status || typeof status !== 'string' || 
+        !customer_Id || typeof customer_Id !== 'string') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'All fields are required and must be of correct type',
+      });
+    }
+
+    const payment = await prisma.payment.create({
       data: {
         payment_type,
         amount,
         status,
         customer_Id,
+        payment_intent_id: '',
       },
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       status: 'success',
-      message: 'Payment created successfully',
+      message: 'Payment created successfully'
     });
   } catch (error) {
-    next(error);
+    return res.status(400).json({
+      status: 'error',
+      message: 'Error creating payment',
+    });
   }
 };
 
 export const getPaymentsByCustomer = async (
   req: Request,
   res: Response,
-  next: NextFunction,
-) => {
+): Promise<any> => {
   try {
     const customer_Id = req.params.customer_Id;
+
+    if (!customer_Id || typeof customer_Id !== 'string') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Customer ID is required and must be a string',
+      });
+    }
 
     const payments = await prisma.payment.findMany({
       where: {
@@ -41,24 +62,33 @@ export const getPaymentsByCustomer = async (
       },
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       message: 'Customer payments retrieved successfully',
       data: payments,
     });
 
   } catch (error) {
-    next(error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error retrieving customer payments'
+    });
   }
 }
 
 export const getPaymentById = async (
   req: Request,
   res: Response,
-  next: NextFunction,
-) => {
+): Promise<any> => {
   try {
     const payment_Id = req.params.payment_Id;
+
+    if (!payment_Id || typeof payment_Id !== 'string') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Payment ID is required and must be a string',
+      });
+    }
 
     const payment = await prisma.payment.findUnique({
       where: {
@@ -66,42 +96,51 @@ export const getPaymentById = async (
       },
     });
 
-    res.status(200).json({
+    if (!payment) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Payment not found',
+      });
+    }
+
+    return res.status(200).json({
       status: 'success',
       message: 'Payment retrieved successfully',
       data: payment,
     });
-
   } catch (error) {
-    next(error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error retrieving payment'
+    });
   }
 }
 
 export const getAllPayments = async (
   req: Request,
   res: Response,
-  next: NextFunction,
-) => {
+): Promise<any> => {
   try {
     const payments = await prisma.payment.findMany();
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       message: 'Payments retrieved successfully',
       data: payments,
     });
 
   } catch (error) {
-    next(error);
+    return res.status(500).json({
+      status: 'error',
+      matchMedia: 'Error retrieving payments'
+    });
   }
 }
 
-// Get payment statistics for the past year, past six months, and past month
 export const getPaymentStatistics = async (
   req: Request,
   res: Response,
-  next: NextFunction,
-) => {
+): Promise<any> => {
   try {
     const totalPayments = await prisma.payment.count();
 
@@ -153,7 +192,7 @@ export const getPaymentStatistics = async (
       },
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       message: 'Payment statistics retrieved successfully',
       data: {
@@ -165,21 +204,131 @@ export const getPaymentStatistics = async (
       },
     });
   } catch (error) {
-    next(error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error retrieving payment statistics'
+    });
   }
 }
 
-export const test = async (
+export const createPaymentIntent = async (
   req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+  res: Response
+): Promise<any> => {
   try {
-    res.status(200).json({
+    const { amount } = req.body;
+
+    if (!amount || typeof amount !== 'number') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Amount is required and must be a number',
+      });
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount,
+      currency: 'usd',
+    });
+
+    console.log(paymentIntent);
+
+    await prisma.payment.create({
+      data: {
+        payment_type: 'card',
+        amount: amount/100,
+        status: 'pending',
+        payment_intent_id: paymentIntent.id,
+        customer_Id: 'cust_id',
+      },
+    });
+
+    return res.status(201).json({
       status: 'success',
-      message: 'Payment TEST',
+      message: 'Payment intent created successfully',
+      data: {
+        client_secret: paymentIntent.client_secret,
+      },
     });
   } catch (error) {
-    next(error);
+    console.log(error)
+    return res.status(400).json({
+      status: 'error',
+      message: 'Error creating payment intent',
+    });
   }
+}
+
+export const confirmPayment = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  const sig = req.headers['stripe-signature'];
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, STRIPE_WEBHOOK_SECRET);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).send(`Webhook Error`);
+  }
+
+  if (event.type === 'payment_intent.succeeded') {
+    const paymentIntent = event.data.object;
+
+    const payment = await prisma.payment.findFirst({
+      where: {
+        payment_intent_id: paymentIntent.id,
+      },
+    });
+
+    if (!payment) {
+      console.log('Payment not found');
+
+      return res.status(404).json({
+        status: 'error',
+        message: 'Payment not found',
+      });
+    }
+
+    await prisma.payment.update({
+      where: {
+        payment_Id: payment.payment_Id,
+      },
+      data: {
+        status: 'succeeded',
+      },
+    });
+
+    // add logic to call order service
+  }
+  else if (event.type === 'payment_intent.payment_failed') {
+    const paymentIntent = event.data.object;
+
+    const payment = await prisma.payment.findFirst({
+      where: {
+        payment_intent_id: paymentIntent.id,
+      },
+    });
+
+    if (!payment) {
+      console.log('Payment not found');
+
+      return res.status(404).json({
+        status: 'error',
+        message: 'Payment not found',
+      });
+    }
+
+    await prisma.payment.update({
+      where: {
+        payment_Id: payment.payment_Id,
+      },
+      data: {
+        status: 'failed',
+      },
+    });
+  }
+
+  return res.status(200).json({ received: true });
 }
